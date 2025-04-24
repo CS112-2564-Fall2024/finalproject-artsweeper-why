@@ -1,15 +1,23 @@
 package edu.miracosta.cs112.finalproject.finalproject;
 
+import javafx.scene.control.Label;
+
 public class Tile {
-    boolean isMine;
 
-    boolean isClicked;
-    boolean isFlagged;
-    int greyVal;
+    private final boolean isMine;
+    private final int greyVal;
+    private boolean isClicked;
+    private boolean isFlagged;
 
-    public Tile(boolean isMine, int greyVal)  {
+    private Label label;
+
+    private final int x, y;
+
+    public Tile(boolean isMine, int greyVal, int x, int y)  {
         this.isMine = isMine;
         this.greyVal = greyVal;
+        this.x = x;
+        this.y = y;
     }
 
     public String toString(){
@@ -41,5 +49,16 @@ public class Tile {
 
     public void setIsFlagged(boolean isFlagged) {
         this.isFlagged = isFlagged;
+    }
+
+    public Label getLabel() { return this.label; }
+
+    public void setLabel(Label label) { this.label = label; }
+
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
     }
 }

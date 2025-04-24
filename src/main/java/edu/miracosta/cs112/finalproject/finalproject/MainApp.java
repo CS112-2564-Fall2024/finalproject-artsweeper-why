@@ -21,6 +21,9 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
         launch();
     }
 
+    static final int MAX_WIDTH = 64;
+    static final int MAX_HEIGHT = 64;
+
     Stage primaryStage;
 
     File imageFile;
@@ -41,10 +44,6 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
     Button genButton;
 
     GridPane gridPane;
-
-    Region[][] UITiles;
-    static final int MAX_WIDTH = 64;
-    static final int MAX_HEIGHT = 64;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -137,28 +136,10 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(0);
         gridPane.setVgap(0);
-        minefieldPane.getChildren().add(gridPane); // ← ADD THIS LINE
+        minefieldPane.getChildren().add(gridPane);
 
-        // ===== Assemble =====
         root.setLeft(controlPanel);
         root.setCenter(minefieldPane);
-
-        // pre-generate tiles
-        UITiles = new Region[MAX_HEIGHT][MAX_WIDTH];
-
-        for (int row = 0; row < MAX_HEIGHT; row++) {
-            for (int col = 0; col < MAX_WIDTH; col++) {
-                Region tileRegion = getRegion(row, col);
-                int finalRow = row;
-                int finalCol = col;
-
-                tileRegion.setOnMouseClicked(e -> {
-                    System.out.println("Clicked tile at " + finalCol + ", " + finalRow);
-                });
-                gridPane.add(tileRegion, col, row);
-                UITiles[row][col] = tileRegion;
-            }
-        }
 
         Scene scene = new Scene(root, 1080, 720);
         stage.setScene(scene);
@@ -169,6 +150,7 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
     public void handle(ActionEvent event) {
         // generate
         if (event.getSource() == genButton) {
+            if(imageFile == null) {return;}
             String imagePath = "/images/" + imageFile.getName();
             int intensity = (int)intensitySlider.getValue()+1;
             int temp = (int)temperatureSlider.getValue()+1;
@@ -208,34 +190,32 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
             return;
         }
 
+        gridPane.getChildren().clear();
+
         double tileSize = 720.0 / Math.max(rows, cols);
         System.out.println("tileSize: " + tileSize);
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 Tile tile = map[row][col];
 
-                int finalRow = row;
-                int finalCol = col;
+                Label tileUI = new Label();
+                tileUI.setMinSize(tileSize, tileSize);
+                tileUI.setMaxSize(tileSize, tileSize);
+                tileUI.setAlignment(Pos.CENTER);
+                tileUI.setPadding(Insets.EMPTY); // removes extra internal spacing
+                tileUI.setText(""); // prevents any content from stretching it
 
-                Region tileRegion = new Region();
-                tileRegion.setPrefSize(tileSize, tileSize);
+                map[row][col].setLabel(tileUI);
 
                 int grey = tile.getGreyVal();
                 String color = String.format("rgb(%d, %d, %d)", grey, grey, grey);
-                tileRegion.setStyle("-fx-background-color: " + color);
-                tileRegion.setOnMouseClicked(e -> {
-                    System.out.println("Clicked tile at " + finalCol + ", " + finalRow);
+                tileUI.setStyle("-fx-background-color: " + color);
+                tileUI.setOnMouseClicked(e -> {
+                    // click on tile
+                    Player.clickTile(map, tile);
                 });
-                gridPane.add(tileRegion, col, row);
+                gridPane.add(tileUI, col, row);
             }
         }
-    }
-
-    private static Region getRegion(int row, int col) {
-        Region tileRegion = new Region();
-        double tileSize = 720.0 / Math.max(MAX_HEIGHT, MAX_WIDTH);
-        tileRegion.setPrefSize(tileSize, tileSize);
-        tileRegion.setStyle("-fx-background-color: #555;");
-        return tileRegion;
     }
 }

@@ -2,13 +2,9 @@ package edu.miracosta.cs112.finalproject.finalproject;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Random;
 
 public class ImageMinefieldGenerator extends MinefieldGenerator {
-    int height;
-    int width;
-
     String imagePath;
     int intensity;
     int temperature;
@@ -65,23 +61,24 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
                     System.out.println("Intensity: " + intensity);
                     System.out.println("Temperature: " + temperature);
 
-                    double chance = Math.min((greyValue) / 255.0, 95.0);
+                    // calculate chance, clamp between 0.05 and 0.95
+                    double chance = Math.max(Math.min((greyValue) / 255.0, 0.95), 0.05);
                     System.out.println("Chance: " + chance);
 
                     Tile t;
                     if(deterministic) {
                         if (greyValue < 80) {
-                            t = new Tile(true, greyValue);
+                            t = new Tile(true, greyValue, col, row);
                         }
                         else {
-                            t = new Tile(false, greyValue);
+                            t = new Tile(false, greyValue, col, row);
                         }
                     }
                     else {
                         if (rand.nextDouble() > chance) {
-                            t = new Tile(true, greyValue);
+                            t = new Tile(true, greyValue, col, row);
                         } else {
-                            t = new Tile(false, greyValue);
+                            t = new Tile(false, greyValue, col, row);
                         }
                     }
                     map[row][col] = t;
@@ -90,39 +87,5 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
 
             return map;
         }
-    }
-
-
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public int getIntensity() {
-        return intensity;
-    }
-
-    public void setIntensity(int intensity) {
-        this.intensity = intensity;
-    }
-
-    public int getTemperature() {
-        return temperature;
-    }
-
-    public void setTemperature(int temperature) {
-        this.temperature = temperature;
-    }
-
-    public boolean isDeterministic() {
-        return deterministic;
-    }
-
-    public void setDeterministic(boolean deterministic) {
-        this.deterministic = deterministic;
     }
 }
