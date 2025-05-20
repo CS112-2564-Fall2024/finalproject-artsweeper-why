@@ -61,7 +61,7 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
 
             Random rand = new Random();
 
-            double contrast = 0.6; // Increase for stronger dark/bright distinction
+            double contrast = 0.6;
 
             for (int row = 0; row < height; row++) {
                 for (int col = 0; col < width; col++) {
@@ -76,17 +76,14 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
                     greyValue -= intensity;
 
                     double globalWeight = 2.0;
-                    // Darkness relative to average
+
                     double darknessFactor = ((avgBrightness - greyValue) * globalWeight) / 255.0;
 
                     double mineBias = 0.1;
-                    // Chance of being a mine (higher if darker than average)
                     double mineChance = 0.5 + darknessFactor * contrast;
                     mineChance -= mineBias;
                     mineChance = Math.max(0.05, Math.min(mineChance, 0.95));
 
-
-                    // Random mine assignment
                     boolean isMine = rand.nextDouble() < mineChance;
                     Tile t = new Tile(isMine, greyValue, col, row);
                     map[row][col] = t;

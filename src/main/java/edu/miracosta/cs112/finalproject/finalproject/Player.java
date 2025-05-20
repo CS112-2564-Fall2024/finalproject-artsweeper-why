@@ -47,7 +47,6 @@ public class Player {
             t.getLabel().setText(mineCount == 0 ? "" : String.valueOf(mineCount));
         }
 
-
         if (mineCount == 0) {
             for (int dr = -1; dr <= 1; dr++) {
                 for (int dc = -1; dc <= 1; dc++) {

@@ -53,7 +53,7 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
 
         BorderPane root = new BorderPane();
 
-        // ===== Control Panel =====
+        // Control Panel
         VBox controlPanel = new VBox(10); // 20px spacing
         controlPanel.setPadding(new Insets(20));
         controlPanel.setPrefWidth(360);
