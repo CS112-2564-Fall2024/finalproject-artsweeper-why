@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -202,17 +203,26 @@ public class MainApp extends Application implements EventHandler<ActionEvent> {
                 tileUI.setMinSize(tileSize, tileSize);
                 tileUI.setMaxSize(tileSize, tileSize);
                 tileUI.setAlignment(Pos.CENTER);
-                tileUI.setPadding(Insets.EMPTY); // removes extra internal spacing
-                tileUI.setText(""); // prevents any content from stretching it
+                tileUI.setPadding(Insets.EMPTY);
+                tileUI.setText("");
+
+                tile.setLabel(tileUI);
 
                 map[row][col].setLabel(tileUI);
 
-                int grey = tile.getGreyVal();
-                String color = String.format("rgb(%d, %d, %d)", grey, grey, grey);
-                tileUI.setStyle("-fx-background-color: " + color);
+                tile.getLabel().setStyle("-fx-background-color: #5ED500FF;");
+
                 tileUI.setOnMouseClicked(e -> {
-                    // click on tile
-                    Player.clickTile(map, tile);
+                    if (e.getButton() == MouseButton.PRIMARY) {
+                        try {
+                            Player.clickTile(map, tile);
+                        } catch (GameOverException exception) {
+                            System.out.println(exception.getMessage());
+                            primaryStage.close();
+                        }
+                    } else if (e.getButton() == MouseButton.SECONDARY) {
+                        Player.flagTile(tile);
+                    }
                 });
                 gridPane.add(tileUI, col, row);
             }

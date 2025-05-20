@@ -1,68 +1,87 @@
 package edu.miracosta.cs112.finalproject.finalproject;
 
-import java.util.ArrayList;
-
 public class Player {
-    private static ArrayList<Tile> findNeighbors(Tile[][] map, int row, int col){
-        ArrayList<Tile> tiles = new ArrayList<>();
+    private static void flush(Tile[][] map, int row, int col) {
+        int height = map.length;
+        int width = map[0].length;
 
-        if(row+1<map.length){}
-        Tile up = map[row+1][col];
-        Tile down = map[row-1][col];
-        Tile left = map[row][col-1];
-        Tile right = map[row][col+1];
+        if (row < 0 || row >= height || col < 0 || col >= width) return;
 
-        if(!up.getIsMine() && !up.getIsClicked()){
-            tiles.add(up);
-            up.setClicked(true);
-            tiles.addAll(findNeighbors(map, up.getY(), up.getX()));
-        }
-        if(!down.getIsMine() && !down.getIsClicked()){
-            tiles.add(down);
-            down.setClicked(true);
-            tiles.addAll(findNeighbors(map, down.getY(), down.getX()));
-        }
-        if(!left.getIsMine() && !left.getIsClicked()){
-            tiles.add(left);
-            left.setClicked(true);
-            tiles.addAll(findNeighbors(map, left.getY(), left.getX()));
-        }
-        if(!right.getIsMine() && !right.getIsClicked()){
-            tiles.add(right);
-            right.setClicked(true);
-            tiles.addAll(findNeighbors(map, right.getY(), right.getX()));
-        }
-        /*
-        for(int i = row-1; i <= row+1; i++){
-            for(int j = col-1; j <= col+1; j++){
-                if((i != row || j != col) && (i >= 0 && i < map.length && j >= 0 && j < map[0].length)){
+        Tile t = map[row][col];
 
-                    Tile tile = map[i][j];
-                    if(!tile.getIsMine() && !tile.getIsClicked()){
-                        tile.setClicked(true);
-                        tiles.add(tile);
-                        tiles.addAll(findNeighbors(map, i, j));
+        if (t.getIsClicked() || t.getIsMine()) return;
+
+        t.setClicked(true);
+
+        int mineCount = 0;
+        for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+                int newRow = row + dr;
+                int newCol = col + dc;
+                if (newRow >= 0 && newRow < height && newCol >= 0 && newCol < width) {
+                    if (map[newRow][newCol].getIsMine()) {
+                        mineCount++;
                     }
-
                 }
             }
-        }*/
+        }
 
-        return tiles;
+        if (t.getLabel() != null) {
+            int grey = t.getGreyVal();
+            String bgColor = String.format("rgb(%d, %d, %d)", grey, grey, grey);
+
+            String textColor = switch (mineCount) {
+                case 1 -> "#0000FF";      // Blue
+                case 2 -> "#008000";      // Green
+                case 3 -> "#FF0000";      // Red
+                case 4 -> "#000080";      // Dark Blue
+                case 5 -> "#800000";      // Maroon
+                case 6 -> "#008B8B";      // Turquoise
+                case 7 -> "#000000";      // Black
+                case 8 -> "#808080";      // Gray
+                default -> "#0000FF";
+            };
+
+            t.getLabel().setStyle("-fx-background-color: " + bgColor + ";"
+                    + "-fx-text-fill: " + textColor + ";");
+            t.getLabel().setText(mineCount == 0 ? "" : String.valueOf(mineCount));
+        }
+
+
+        if (mineCount == 0) {
+            for (int dr = -1; dr <= 1; dr++) {
+                for (int dc = -1; dc <= 1; dc++) {
+                    if (dr != 0 || dc != 0) {
+                        flush(map, row + dr, col + dc);
+                    }
+                }
+            }
+        }
     }
 
-    static void clickTile(Tile[][] map, Tile t) {
+    static void clickTile(Tile[][] map, Tile t) throws GameOverException {
+        if(t.getIsClicked() || t.getIsFlagged()) return;
+
         System.out.println("Clicked tile at " + t.getX() + ", " + t.getY());
-        if(t.getIsMine()){
-            System.out.println("Mine");
+        if (t.getIsMine()) {
+            throw new GameOverException("Game over! You clicked on a mine at (" + t.getX() + ", " + t.getY() + ")");
+        } else {
+            flush(map, t.getY(), t.getX());
         }
-        else{
-            System.out.println("Safe");
-            ArrayList<Tile> neighbors = findNeighbors(map, t.getX(), t.getY());
-            System.out.println("Neighbor Amount: " + neighbors.size());
-            for(Tile neighbor : neighbors){
-                neighbor.getLabel().setStyle("-fx-background-color: rgb(255,0,0);");
-            }
+    }
+
+    static void flagTile(Tile t) {
+        if(t.getIsClicked()) return;
+        t.setIsFlagged(!t.getIsFlagged());
+
+        System.out.println(t.getIsFlagged());
+
+        if (t.getIsFlagged()) {
+            t.getLabel().setText("⚑");
+            t.getLabel().setStyle("-fx-background-color: #ff4d00; -fx-border-color: black;");
+        } else {
+            t.getLabel().setText("");
+            t.getLabel().setStyle("-fx-background-color: #5ED500FF; -fx-border-color: rgba(0,0,0,0);");
         }
     }
 }

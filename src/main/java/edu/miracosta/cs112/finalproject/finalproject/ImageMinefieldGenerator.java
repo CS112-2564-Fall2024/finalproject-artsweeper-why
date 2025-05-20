@@ -67,7 +67,7 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
 
                     Tile t;
                     if(deterministic) {
-                        if (greyValue < 80) {
+                        if (greyValue < 70) {
                             t = new Tile(true, greyValue, col, row);
                         }
                         else {
