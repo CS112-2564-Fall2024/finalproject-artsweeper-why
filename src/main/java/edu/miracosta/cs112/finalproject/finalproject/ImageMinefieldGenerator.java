@@ -40,47 +40,55 @@ public class ImageMinefieldGenerator extends MinefieldGenerator {
         public static Tile[][] processImage(BufferedImage image, int intensity, int temperature, boolean deterministic) {
             Tile[][] map = new Tile[image.getHeight()][image.getWidth()];
 
-            for (int row = 0; row < image.getHeight(); row++) {
-                for (int col = 0; col < image.getWidth(); col++) {
+            // Step 1: Compute average brightness of the image
+            long totalBrightness = 0;
+            int width = image.getWidth();
+            int height = image.getHeight();
+
+            for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
                     int pixel = image.getRGB(col, row);
                     int red = (pixel >> 16) & 0xff;
                     int green = (pixel >> 8) & 0xff;
                     int blue = pixel & 0xff;
+                    int grey = (red + green + blue) / 3;
+                    totalBrightness += grey;
+                }
+            }
+
+            double avgBrightness = totalBrightness / (double) (width * height);
+
+
+            Random rand = new Random();
+
+            double contrast = 0.6; // Increase for stronger dark/bright distinction
+
+            for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
+                    int pixel = image.getRGB(col, row);
+                    int red = (pixel >> 16) & 0xff;
+                    int green = (pixel >> 8) & 0xff;
+                    int blue = pixel & 0xff;
+
                     int greyValue = (red + green + blue) / 3;
-
-                    if (greyValue < 20) {
-                        System.out.println("Dark pixel");
-                        System.out.println(greyValue);
-                    }
-
-                    Random rand = new Random();
                     greyValue += rand.nextInt(temperature * 2) - temperature;
                     greyValue = Math.max(0, Math.min(255, greyValue));
                     greyValue -= intensity;
 
-                    System.out.println("Intensity: " + intensity);
-                    System.out.println("Temperature: " + temperature);
+                    double globalWeight = 2.0;
+                    // Darkness relative to average
+                    double darknessFactor = ((avgBrightness - greyValue) * globalWeight) / 255.0;
 
-                    // calculate chance, clamp between 0.05 and 0.95
-                    double chance = Math.max(Math.min((greyValue) / 255.0, 0.95), 0.05);
-                    System.out.println("Chance: " + chance);
+                    double mineBias = 0.1;
+                    // Chance of being a mine (higher if darker than average)
+                    double mineChance = 0.5 + darknessFactor * contrast;
+                    mineChance -= mineBias;
+                    mineChance = Math.max(0.05, Math.min(mineChance, 0.95));
 
-                    Tile t;
-                    if(deterministic) {
-                        if (greyValue < 70) {
-                            t = new Tile(true, greyValue, col, row);
-                        }
-                        else {
-                            t = new Tile(false, greyValue, col, row);
-                        }
-                    }
-                    else {
-                        if (rand.nextDouble() > chance) {
-                            t = new Tile(true, greyValue, col, row);
-                        } else {
-                            t = new Tile(false, greyValue, col, row);
-                        }
-                    }
+
+                    // Random mine assignment
+                    boolean isMine = rand.nextDouble() < mineChance;
+                    Tile t = new Tile(isMine, greyValue, col, row);
                     map[row][col] = t;
                 }
             }
